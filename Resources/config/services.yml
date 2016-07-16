@@ -1,0 +1,6 @@
+services:
+    vkr_settings.settings_retriever:
+        class: VKR\SettingsBundle\Services\SettingsRetriever
+        arguments:
+            - "@service_container"
+            - "@doctrine.orm.entity_manager"
