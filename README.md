@@ -57,7 +57,7 @@ Container and entity manager should be injected if initialized manually
 If the second argument is set to true, the method will return false if the setting is not found
 instead of throwing an exception.
 
-*SettingsEntityInterface[] SettingsRetriever::getAllFromDB()*
+*string[] SettingsRetriever::getAllFromDB()*
 
 Will try to retrieve all objects from the settings entity as a key-value array.
 If the entity is not set, will return empty array. This method will ignore all parameters-based
