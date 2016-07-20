@@ -83,7 +83,13 @@ class SettingsRetriever
             return [];
         }
         $repo = $this->entityManager->getRepository($this->settingsEntity);
-        return $repo->findAll();
+        $records = $repo->findAll();
+        $allSettings = [];
+        /** @var SettingsEntityInterface $record */
+        foreach ($records as $record) {
+            $allSettings[$record->getName()] = $record->getValue();
+        }
+        return $allSettings;
     }
 
     /**

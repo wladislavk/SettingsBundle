@@ -3,7 +3,6 @@ namespace VKR\SettingsBundle\Tests\Services;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
-use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
@@ -33,22 +32,22 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
     ];
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $entityManager;
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $settingsRepository;
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $parameterBag;
 
     /**
-     * @var PHPUnit_Framework_MockObject_MockObject
+     * @var \PHPUnit_Framework_MockObject_MockObject
      */
     protected $container;
 
@@ -101,10 +100,13 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
         $values = $this->settingsRetriever->getAllFromDB();
         $this->assertTrue(is_array($values));
         $this->assertEquals(3, sizeof($values));
-        /** @var SettingsEntity $value */
-        foreach ($values as $value) {
-            if ($value->getName() == 'setting2') {
-                $this->assertEquals('value2_from_db', $value->getValue());
+        /**
+         * @var string $key
+         * @var string $value
+         */
+        foreach ($values as $key => $value) {
+            if ($key == 'setting2') {
+                $this->assertEquals('value2_from_db', $value);
                 break;
             }
         }

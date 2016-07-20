@@ -59,6 +59,6 @@ instead of throwing an exception.
 
 *SettingsEntityInterface[] SettingsRetriever::getAllFromDB()*
 
-Will try to retrieve all objects from the settings entity using Doctrine's default hydration mode.
+Will try to retrieve all objects from the settings entity as a key-value array.
 If the entity is not set, will return empty array. This method will ignore all parameters-based
 settings.
