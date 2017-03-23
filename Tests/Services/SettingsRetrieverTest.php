@@ -3,21 +3,20 @@ namespace VKR\SettingsBundle\Tests\Services;
 
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use VKR\SettingsBundle\Exception\SettingNotFoundException;
 use VKR\SettingsBundle\Services\SettingsRetriever;
 use VKR\SettingsBundle\TestHelpers\SettingsEntity;
 
-class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
+class SettingsRetrieverTest extends TestCase
 {
-    protected $mockedEntity = 'VKR\SettingsBundle\TestHelpers\SettingsEntity';
-    protected $notFoundException = 'VKR\SettingsBundle\Exception\SettingNotFoundException';
-
     /**
      * @var array
      */
-    protected $paramSettings = [
+    private $paramSettings = [
         'setting1' => 'value1',
         'setting2' => 'value2_from_param',
     ];
@@ -25,45 +24,24 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
     /**
      * @var array
      */
-    protected $dbSettings = [
+    private $dbSettings = [
         'setting2' => 'value2_from_db',
         'setting3' => 'value3',
         'setting4' => 'value4',
     ];
 
     /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $entityManager;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $settingsRepository;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $parameterBag;
-
-    /**
-     * @var \PHPUnit_Framework_MockObject_MockObject
-     */
-    protected $container;
-
-    /**
      * @var SettingsRetriever
      */
-    protected $settingsRetriever;
+    private $settingsRetriever;
 
     public function setUp()
     {
-        $this->paramSettings['settings_entity'] = $this->mockedEntity;
-        $this->mockParameterBag();
-        $this->mockContainer();
-        $this->mockSettingsRepository();
-        $this->mockEntityManager();
-        $this->settingsRetriever = new SettingsRetriever($this->container, $this->entityManager);
+        $this->paramSettings['settings_entity'] = SettingsEntity::class;
+        $container = $this->mockContainer();
+        $settingsRepository = $this->mockSettingsRepository();
+        $entityManager = $this->mockEntityManager();
+        $this->settingsRetriever = new SettingsRetriever($container, $entityManager);
     }
 
     public function testGetSettingFromParam()
@@ -86,8 +64,8 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
 
     public function testGetNonExistentSetting()
     {
-        $this->setExpectedException($this->notFoundException);
-        $value = $this->settingsRetriever->get('setting125');
+        $this->expectException(SettingNotFoundException::class);
+        $this->settingsRetriever->get('setting125');
     }
 
     public function testGetNonExistentSettingForgiving() {
@@ -112,49 +90,35 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    protected function mockParameterBag()
+    private function mockParameterBag()
     {
-        $this->parameterBag = $this
-            ->getMock(ParameterBagInterface::class);
-        $this->parameterBag->expects($this->any())
-            ->method('get')
-            ->will($this->returnCallback([$this, 'getMockedParamSettingCallback']));
+        $parameterBag = $this->createMock(ParameterBagInterface::class);
+        $parameterBag->method('get')->willReturnCallback([$this, 'getMockedParamSettingCallback']);
+        return $parameterBag;
     }
 
-    protected function mockContainer()
+    private function mockContainer()
     {
-        $this->container = $this
-            ->getMockBuilder(Container::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->container->expects($this->once())
-            ->method('getParameterBag')
-            ->will($this->returnValue($this->parameterBag));
+        $container = $this->createMock(Container::class);
+        $container->method('getParameterBag')->willReturn($this->mockParameterBag());
+        return $container;
     }
 
-    protected function mockSettingsRepository()
+    private function mockSettingsRepository()
     {
-        $this->settingsRepository = $this
-            ->getMockBuilder(EntityRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->settingsRepository->expects($this->any())
-            ->method('findOneBy')
+        $settingsRepository = $this->createMock(EntityRepository::class);
+        $settingsRepository->method('findOneBy')
             ->will($this->returnCallback([$this, 'getMockedDBSettingCallback']));
-        $this->settingsRepository->expects($this->any())
-            ->method('findAll')
+        $settingsRepository->method('findAll')
             ->will($this->returnCallback([$this, 'getAllMockedSettingsCallback']));
+        return $settingsRepository;
     }
 
-    protected function mockEntityManager()
+    private function mockEntityManager()
     {
-        $this->entityManager = $this
-            ->getMockBuilder(EntityManager::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->entityManager->expects($this->any())
-            ->method('getRepository')
-            ->will($this->returnValue($this->settingsRepository));
+        $entityManager = $this->createMock(EntityManager::class);
+        $entityManager->method('getRepository')->willReturn($this->mockSettingsRepository());
+        return $entityManager;
     }
 
     public function getMockedParamSettingCallback($settingName)
@@ -169,8 +133,7 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
     {
         $settingName = $settingArray['name'];
         if (array_key_exists($settingName, $this->dbSettings)) {
-            /** @var SettingsEntity $setting */
-            $setting = new $this->mockedEntity();
+            $setting = new SettingsEntity();
             $setting->setName($settingName);
             $setting->setValue($this->dbSettings[$settingName]);
             return $setting;
@@ -182,8 +145,7 @@ class SettingsRetrieverTest extends \PHPUnit_Framework_TestCase
     {
         $allSettings = [];
         foreach ($this->dbSettings as $name => $value) {
-            /** @var SettingsEntity $setting */
-            $setting = new $this->mockedEntity();
+            $setting = new SettingsEntity();
             $setting->setName($name);
             $setting->setValue($value);
             $allSettings[] = $setting;

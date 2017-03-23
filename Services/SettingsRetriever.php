@@ -4,6 +4,7 @@ namespace VKR\SettingsBundle\Services;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use VKR\SettingsBundle\Exception\InterfaceNotImplementedException;
 use VKR\SettingsBundle\Exception\SettingNotFoundException;
 use VKR\SettingsBundle\Interfaces\SettingsEntityInterface;
@@ -11,12 +12,7 @@ use VKR\SettingsBundle\Interfaces\SettingsEntityInterface;
 class SettingsRetriever
 {
     /**
-     * @var string
-     */
-    protected $settingsInterfaceName = 'VKR\SettingsBundle\Interfaces\SettingsEntityInterface';
-
-    /**
-     * @var \Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface
+     * @var ParameterBagInterface
      */
     private $parameterBag;
 
@@ -28,7 +24,7 @@ class SettingsRetriever
     /**
      * @var string
      */
-    protected $settingsEntity;
+    private $settingsEntity;
 
     /**
      * @param Container $container
@@ -46,8 +42,8 @@ class SettingsRetriever
         }
         if ($this->settingsEntity) {
             $reflection = new \ReflectionClass($this->settingsEntity);
-            if ($reflection->implementsInterface($this->settingsInterfaceName) !== true) {
-                throw new InterfaceNotImplementedException($this->settingsEntity, $this->settingsInterfaceName);
+            if ($reflection->implementsInterface(SettingsEntityInterface::class) !== true) {
+                throw new InterfaceNotImplementedException($this->settingsEntity, SettingsEntityInterface::class);
             }
         }
     }
@@ -58,7 +54,7 @@ class SettingsRetriever
      * @return bool|string
      * @throws SettingNotFoundException
      */
-    public function get($settingName, $suppressErrors=false)
+    public function get($settingName, $suppressErrors = false)
     {
         $settingValue = $this->checkIfSettingExistsInParameters($settingName);
         if ($settingValue !== false) {
@@ -96,7 +92,7 @@ class SettingsRetriever
      * @param string $settingName
      * @return bool|string
      */
-    protected function checkIfSettingExistsInParameters($settingName)
+    private function checkIfSettingExistsInParameters($settingName)
     {
         try {
             $settingValue = $this->parameterBag->get($settingName);
@@ -110,7 +106,7 @@ class SettingsRetriever
      * @param string $settingName
      * @return bool|string
      */
-    protected function checkIfSettingExistsInDB($settingName)
+    private function checkIfSettingExistsInDB($settingName)
     {
         if (!$this->settingsEntity) {
             return false;
