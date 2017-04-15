@@ -36,7 +36,7 @@ class SettingsRetriever
         $this->parameterBag = $container->getParameterBag();
         $this->entityManager = $entityManager;
         try {
-            $this->settingsEntity = $this->parameterBag->get('settings_entity');
+            $this->settingsEntity = $this->parameterBag->get('vkr_settings.settings_entity');
         } catch (ParameterNotFoundException $e) {
             $this->settingsEntity = '';
         }

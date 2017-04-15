@@ -37,9 +37,8 @@ class SettingsRetrieverTest extends TestCase
 
     public function setUp()
     {
-        $this->paramSettings['settings_entity'] = SettingsEntity::class;
+        $this->paramSettings['vkr_settings.settings_entity'] = SettingsEntity::class;
         $container = $this->mockContainer();
-        $settingsRepository = $this->mockSettingsRepository();
         $entityManager = $this->mockEntityManager();
         $this->settingsRetriever = new SettingsRetriever($container, $entityManager);
     }
